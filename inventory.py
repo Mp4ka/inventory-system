@@ -7,6 +7,9 @@
 # Поля, без которых запись нельзя сохранить.
 REQUIRED_FIELDS = ("inventory_number", "type", "name", "room", "condition")
 
+# Допустимые состояния оборудования (Спринт 2: правила заполнения).
+ALLOWED_CONDITIONS = ("исправно", "требует ремонта", "списано")
+
 # Все поля карточки оборудования в фиксированном порядке.
 ALL_FIELDS = (
     "inventory_number",
@@ -28,11 +31,17 @@ def _normalize(record):
 
 
 def _validate(record):
-    """Проверяет обязательные поля. Поднимает ValueError при некорректном вводе."""
+    """Проверяет обязательные поля и допустимое состояние."""
     for field in REQUIRED_FIELDS:
         value = record.get(field)
         if value is None or str(value).strip() == "":
             raise ValueError(f"Поле '{field}' не может быть пустым")
+    condition = str(record.get("condition", "")).strip().lower()
+    if condition not in ALLOWED_CONDITIONS:
+        raise ValueError(
+            "Недопустимое состояние: "
+            f"'{record.get('condition')}'. Допустимые: {', '.join(ALLOWED_CONDITIONS)}"
+        )
 
 
 def find_by_number(records, number):
