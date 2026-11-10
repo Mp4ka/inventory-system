@@ -1,0 +1,110 @@
+[
+  {
+    "inventory_number": "INV-001",
+    "type": "ПК",
+    "name": "Системный блок Dell OptiPlex 7010",
+    "room": "301",
+    "condition": "исправно",
+    "date_received": "2023-09-01",
+    "responsible": "Иванов И.И."
+  },
+  {
+    "inventory_number": "INV-002",
+    "type": "Монитор",
+    "name": "Монитор Dell P2422H",
+    "room": "301",
+    "condition": "исправно",
+    "date_received": "2023-09-01",
+    "responsible": "Иванов И.И."
+  },
+  {
+    "inventory_number": "INV-003",
+    "type": "ПК",
+    "name": "Системный блок HP ProDesk 400",
+    "room": "302",
+    "condition": "требует ремонта",
+    "date_received": "2022-08-15",
+    "responsible": "Петров П.П."
+  },
+  {
+    "inventory_number": "INV-004",
+    "type": "Монитор",
+    "name": "Монитор Samsung S24R350",
+    "room": "302",
+    "condition": "исправно",
+    "date_received": "2022-08-15",
+    "responsible": "Петров П.П."
+  },
+  {
+    "inventory_number": "INV-005",
+    "type": "Принтер",
+    "name": "Лазерный принтер HP LaserJet P1102",
+    "room": "303",
+    "condition": "исправно",
+    "date_received": "2021-03-10",
+    "responsible": "Сидорова С.С."
+  },
+  {
+    "inventory_number": "INV-006",
+    "type": "ПК",
+    "name": "Ноутбук Lenovo ThinkPad E15",
+    "room": "303",
+    "condition": "списано",
+    "date_received": "2019-01-20",
+    "responsible": "Сидорова С.С."
+  },
+  {
+    "inventory_number": "INV-007",
+    "type": "Клавиатура",
+    "name": "Клавиатура Logitech K120",
+    "room": "301",
+    "condition": "исправно",
+    "date_received": "2023-09-01",
+    "responsible": "Иванов И.И."
+  },
+  {
+    "inventory_number": "INV-008",
+    "type": "Мышь",
+    "name": "Мышь Logitech M100",
+    "room": "301",
+    "condition": "исправно",
+    "date_received": "2023-09-01",
+    "responsible": "Иванов И.И."
+  },
+  {
+    "inventory_number": "INV-009",
+    "type": "Проектор",
+    "name": "Проектор Epson EB-X41",
+    "room": "304",
+    "condition": "исправно",
+    "date_received": "2020-11-05",
+    "responsible": "Кузнецов К.К."
+  },
+  {
+    "inventory_number": "INV-010",
+    "type": "ПК",
+    "name": "Системный блок Dell OptiPlex 3080",
+    "room": "304",
+    "condition": "исправно",
+    "date_received": "2021-02-12",
+    "responsible": "Кузнецов К.К."
+  },
+  {
+    "inventory_number": "INV-011",
+    "type": "Монитор",
+    "name": "Монитор AOC 24B1XH",
+    "room": "304",
+    "condition": "требует ремонта",
+    "date_received": "2021-02-12",
+    "responsible": "Кузнецов К.К."
+  },
+  {
+    "inventory_number": "INV-012",
+    "type": "Принтер",
+    "name": "МФУ Canon i-SENSYS MF3010",
+    "room": "302",
+    "condition": "списано",
+    "date_received": "2018-06-30",
+    "responsible": "Петров П.П."
+  }
+]
