@@ -153,3 +153,19 @@ def test_load_empty_file_returns_empty(tmp_path):
     path = tmp_path / "empty.json"
     path.write_text("", encoding="utf-8")
     assert storage.load_data(str(path)) == []
+
+
+# --- Спринт 2: правила заполнения (проверка состояния) ---
+
+def test_add_invalid_condition_rejected(records):
+    with pytest.raises(ValueError):
+        inventory.add_record(records, valid_record(condition="сломано"))
+
+
+def test_add_allowed_condition_accepted(records):
+    inventory.add_record(records, valid_record(number="INV-020", condition="требует ремонта"))
+    assert inventory.find_by_number(records, "INV-020") is not None
+
+
+def test_allowed_conditions_constant():
+    assert set(inventory.ALLOWED_CONDITIONS) == {"исправно", "требует ремонта", "списано"}
