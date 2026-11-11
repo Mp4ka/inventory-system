@@ -30,18 +30,28 @@ def _normalize(record):
     }
 
 
+def _check_condition(value):
+    """Проверяет, что состояние входит в список допустимых."""
+    condition = str(value).strip().lower()
+    if condition not in ALLOWED_CONDITIONS:
+        raise ValueError(
+            "Недопустимое состояние: "
+            f"'{value}'. Допустимые: {', '.join(ALLOWED_CONDITIONS)}"
+        )
+
+
+def _contains(value, query):
+    """Проверяет частичное совпадение без учёта регистра."""
+    return query.strip().lower() in str(value).strip().lower()
+
+
 def _validate(record):
     """Проверяет обязательные поля и допустимое состояние."""
     for field in REQUIRED_FIELDS:
         value = record.get(field)
         if value is None or str(value).strip() == "":
             raise ValueError(f"Поле '{field}' не может быть пустым")
-    condition = str(record.get("condition", "")).strip().lower()
-    if condition not in ALLOWED_CONDITIONS:
-        raise ValueError(
-            "Недопустимое состояние: "
-            f"'{record.get('condition')}'. Допустимые: {', '.join(ALLOWED_CONDITIONS)}"
-        )
+    _check_condition(record.get("condition", ""))
 
 
 def find_by_number(records, number):
@@ -81,16 +91,16 @@ def list_records(records):
 
 
 def search(records, number=None, room=None, type_=None, condition=None):
-    """Ищет записи по любому сочетанию полей (регистр не учитывается)."""
+    """Ищет записи по любому сочетанию полей (частичное совпадение, регистр не учитывается)."""
     result = []
     for record in records:
-        if number and str(record.get("inventory_number", "")).strip().lower() != number.strip().lower():
+        if number and not _contains(record.get("inventory_number", ""), number):
             continue
-        if room and str(record.get("room", "")).strip().lower() != room.strip().lower():
+        if room and not _contains(record.get("room", ""), room):
             continue
-        if type_ and str(record.get("type", "")).strip().lower() != type_.strip().lower():
+        if type_ and not _contains(record.get("type", ""), type_):
             continue
-        if condition and str(record.get("condition", "")).strip().lower() != condition.strip().lower():
+        if condition and not _contains(record.get("condition", ""), condition):
             continue
         result.append(record)
     return result
@@ -105,6 +115,8 @@ def update_record(records, number, changes):
     if new_number != str(record["inventory_number"]).strip():
         if find_by_number(records, new_number) is not None:
             raise ValueError(f"Запись с инвентарным номером '{new_number}' уже существует")
+    if "condition" in changes:
+        _check_condition(changes["condition"])
     for field in ALL_FIELDS:
         if field in changes:
             record[field] = str(changes[field]).strip()
