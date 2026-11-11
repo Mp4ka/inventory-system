@@ -169,3 +169,26 @@ def test_add_allowed_condition_accepted(records):
 
 def test_allowed_conditions_constant():
     assert set(inventory.ALLOWED_CONDITIONS) == {"исправно", "требует ремонта", "списано"}
+
+
+# --- Спринт 3: поиск и изменение ---
+
+def test_search_partial_number(records):
+    result = inventory.search(records, number="001")
+    assert len(result) == 1
+    assert result[0]["inventory_number"] == "INV-001"
+
+
+def test_search_partial_room(records):
+    result = inventory.search(records, room="30")
+    assert len(result) == 2
+
+
+def test_update_invalid_condition_rejected(records):
+    with pytest.raises(ValueError):
+        inventory.update_record(records, "INV-001", {"condition": "сломано"})
+
+
+def test_update_valid_condition_accepted(records):
+    inventory.update_record(records, "INV-001", {"condition": "списано"})
+    assert inventory.find_by_number(records, "INV-001")["condition"] == "списано"
