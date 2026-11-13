@@ -4,6 +4,7 @@
 Логика операций находится в inventory.py, хранение — в storage.py.
 """
 
+import datetime
 import os
 import re
 import sys
@@ -158,23 +159,60 @@ def ask_condition():
         )
 
 
+def ask_number(records):
+    """Спрашивает инвентарный номер и сразу проверяет уникальность."""
+    while True:
+        value = input("Инвентарный номер (пусто — сгенерировать): ").strip()
+        if not value:
+            return ""
+        if inventory.find_by_number(records, value) is not None:
+            print(f"{C.RED}Номер «{value}» уже используется. Введите другой или оставьте пустым.{C.RESET}")
+            continue
+        return value
+
+
+def ask_date(prompt):
+    """Спрашивает дату ГГГГ-ММ-ДД; пусто — не заполнено, иначе сразу проверяет."""
+    while True:
+        value = input(prompt).strip()
+        if not value:
+            return ""
+        try:
+            datetime.datetime.strptime(value, "%Y-%m-%d")
+            return value
+        except ValueError:
+            print(f"{C.RED}Неверная дата «{value}». Нужен формат ГГГГ-ММ-ДД, например 2024-09-01.{C.RESET}")
+
+
+def ask_responsible(prompt):
+    """Спрашивает ФИО; пусто — не заполнено, цифры без букв отклоняются."""
+    while True:
+        value = input(prompt).strip()
+        if not value:
+            return ""
+        if not re.search(r"[A-Za-zА-Яа-яЁё]", value):
+            print(f"{C.RED}ФИО должно содержать буквы (или оставьте поле пустым).{C.RESET}")
+            continue
+        return value
+
+
 def ask_retry(message):
     """Спрашивает, хочет ли пользователь исправить ошибку."""
     answer = input(f"{C.YELLOW}{message} (да/нет): {C.RESET}").strip().lower()
     return answer in ("да", "yes", "y", "1")
 
 
-def input_record():
-    """Собирает данные карточки с клавиатуры, проверяя поля сразу."""
+def input_record(records):
+    """Собирает данные карточки, проверяя каждое поле сразу."""
     print(f"{C.BOLD}Заполните поля карточки оборудования.{C.RESET}")
     return {
-        "inventory_number": input("Инвентарный номер (пусто — сгенерировать): ").strip(),
+        "inventory_number": ask_number(records),
         "type": ask_required("Тип (ПК/монитор/принтер и др.): ", "тип"),
         "name": ask_required("Наименование: ", "наименование"),
         "room": ask_required("Кабинет: ", "кабинет"),
         "condition": ask_condition(),
-        "date_received": input("Дата поступления (необязательно): ").strip(),
-        "responsible": input("Ответственное лицо (необязательно): ").strip(),
+        "date_received": ask_date("Дата поступления (ГГГГ-ММ-ДД, необязательно): "),
+        "responsible": ask_responsible("Ответственное лицо (ФИО, необязательно): "),
     }
 
 
@@ -218,8 +256,36 @@ def _fix_field(field, record):
     return value or None
 
 
+def _ask_edit_value(field, current):
+    """Спрашивает новое значение поля; пусто — оставить прежним."""
+    prompt = f"{field} [{current}] (пусто — оставить): "
+    if field == "condition":
+        value = input(prompt).strip()
+        while value and value.lower() not in inventory.ALLOWED_CONDITIONS:
+            print(f"{C.RED}Недопустимое состояние «{value}». Допустимо: {', '.join(inventory.ALLOWED_CONDITIONS)}.{C.RESET}")
+            value = input(prompt).strip()
+        return value
+    if field == "date_received":
+        value = input(prompt).strip()
+        while value:
+            try:
+                datetime.datetime.strptime(value, "%Y-%m-%d")
+                break
+            except ValueError:
+                print(f"{C.RED}Неверная дата «{value}». Формат ГГГГ-ММ-ДД.{C.RESET}")
+                value = input(prompt).strip()
+        return value
+    if field == "responsible":
+        value = input(prompt).strip()
+        while value and not re.search(r"[A-Za-zА-Яа-яЁё]", value):
+            print(f"{C.RED}ФИО должно содержать буквы.{C.RESET}")
+            value = input(prompt).strip()
+        return value
+    return input(prompt).strip()
+
+
 def add(records):
-    record = input_record()
+    record = input_record(records)
     while True:
         if not record["inventory_number"]:
             record["inventory_number"] = inventory.generate_inventory_number(records)
@@ -254,7 +320,7 @@ def edit(records):
     print(f"{C.BOLD}Введите новые значения (пустое поле — оставить прежним).{C.RESET}")
     changes = {}
     for field in inventory.ALL_FIELDS:
-        value = input(f"{field} [{record[field]}]: ").strip()
+        value = _ask_edit_value(field, record[field])
         if value:
             changes[field] = value
     while True:
