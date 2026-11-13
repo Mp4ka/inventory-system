@@ -5,6 +5,7 @@
 """
 
 import os
+import re
 import sys
 
 import inventory
@@ -193,9 +194,33 @@ def show_all(records):
         print_card(record)
 
 
+def _error_field(message):
+    """Определяет, к какому полю относится ошибка (для точечного исправления)."""
+    match = re.search(r"Поле '([^']+)'", message)
+    if match:
+        return match.group(1)
+    if "инвентарным номером" in message:
+        return "inventory_number"
+    if "состояние" in message.lower():
+        return "condition"
+    return None
+
+
+def _fix_field(field, record):
+    """Переспрашивает только одно проблемное поле. None означает отмену."""
+    if field == "condition":
+        record["condition"] = ask_condition()
+        return record["condition"]
+    if field == "inventory_number":
+        value = input("Введите другой инвентарный номер (пусто — отмена): ").strip()
+        return value or None
+    value = input(f"{field} [{record.get(field, '')}] (пусто — отмена): ").strip()
+    return value or None
+
+
 def add(records):
+    record = input_record()
     while True:
-        record = input_record()
         if not record["inventory_number"]:
             record["inventory_number"] = inventory.generate_inventory_number(records)
             print(f"{C.CYAN}Номер сгенерирован автоматически: {record['inventory_number']}{C.RESET}")
@@ -206,25 +231,33 @@ def add(records):
             return
         except ValueError as e:
             print(f"{C.RED}Ошибка: {e}{C.RESET}")
-            if not ask_retry("Исправить запись?"):
+            field = _error_field(str(e))
+            if field is None:
                 return
+            print(f"{C.YELLOW}Исправьте только поле «{field}» — заново всё вводить не нужно.{C.RESET}")
+            new_value = _fix_field(field, record)
+            if new_value is None:
+                return
+            record[field] = new_value
 
 
 def edit(records):
-    while True:
+    number = None
+    record = None
+    while record is None:
         number = input("Инвентарный номер записи для изменения: ").strip()
         record = inventory.find_by_number(records, number)
         if record is None:
             print(f"{C.RED}Запись не найдена.{C.RESET}")
             if not ask_retry("Попробовать другой номер?"):
                 return
-            continue
-        print(f"{C.BOLD}Введите новые значения (пустое поле — оставить прежним).{C.RESET}")
-        changes = {}
-        for field in inventory.ALL_FIELDS:
-            value = input(f"{field} [{record[field]}]: ").strip()
-            if value:
-                changes[field] = value
+    print(f"{C.BOLD}Введите новые значения (пустое поле — оставить прежним).{C.RESET}")
+    changes = {}
+    for field in inventory.ALL_FIELDS:
+        value = input(f"{field} [{record[field]}]: ").strip()
+        if value:
+            changes[field] = value
+    while True:
         try:
             inventory.update_record(records, number, changes)
             save(records)
@@ -232,8 +265,14 @@ def edit(records):
             return
         except ValueError as e:
             print(f"{C.RED}Ошибка: {e}{C.RESET}")
-            if not ask_retry("Исправить?"):
+            field = _error_field(str(e))
+            if field is None:
                 return
+            print(f"{C.YELLOW}Исправьте только поле «{field}» — остальные изменения сохраняются.{C.RESET}")
+            new_value = _fix_field(field, record)
+            if new_value is None:
+                return
+            changes[field] = new_value
 
 
 def delete(records):
