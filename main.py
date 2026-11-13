@@ -65,12 +65,12 @@ def add(records):
 
 def edit(records):
     number = input("Инвентарный номер записи для изменения: ").strip()
-    if inventory.find_by_number(records, number) is None:
+    record = inventory.find_by_number(records, number)
+    if record is None:
         print("Запись не найдена.")
         return
     print("Введите новые значения (пустое поле — оставить прежним).")
     changes = {}
-    record = inventory.find_by_number(records, number)
     for field in inventory.ALL_FIELDS:
         value = input(f"{field} [{record[field]}]: ").strip()
         if value:

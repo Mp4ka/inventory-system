@@ -107,7 +107,8 @@ def search(records, number=None, room=None, type_=None, condition=None):
 
 
 def update_record(records, number, changes):
-    """Изменяет поля записи по номеру. Не позволяет создать повтор номера."""
+    """Изменяет поля записи по номеру. Не позволяет создать повтор номера
+    и проверяет корректность итоговой записи."""
     record = find_by_number(records, number)
     if record is None:
         raise ValueError(f"Запись с номером '{number}' не найдена")
@@ -115,11 +116,12 @@ def update_record(records, number, changes):
     if new_number != str(record["inventory_number"]).strip():
         if find_by_number(records, new_number) is not None:
             raise ValueError(f"Запись с инвентарным номером '{new_number}' уже существует")
-    if "condition" in changes:
-        _check_condition(changes["condition"])
+    updated = dict(record)
     for field in ALL_FIELDS:
         if field in changes:
-            record[field] = str(changes[field]).strip()
+            updated[field] = str(changes[field]).strip()
+    _validate(updated)
+    record.update(updated)
     return record
 
 
