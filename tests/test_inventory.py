@@ -192,3 +192,24 @@ def test_update_invalid_condition_rejected(records):
 def test_update_valid_condition_accepted(records):
     inventory.update_record(records, "INV-001", {"condition": "списано"})
     assert inventory.find_by_number(records, "INV-001")["condition"] == "списано"
+
+
+# --- Спринт 4: файловое хранение ---
+
+def test_save_data_creates_directory(tmp_path):
+    path = os.path.join(tmp_path, "nested", "dir", "inventory.json")
+    storage.save_data(path, [{"inventory_number": "INV-001"}])
+    assert os.path.exists(path)
+
+
+def test_load_non_list_json_returns_empty(tmp_path):
+    path = tmp_path / "obj.json"
+    path.write_text('{"a": 1}', encoding="utf-8")
+    assert storage.load_data(str(path)) == []
+
+
+def test_save_and_load_unicode(tmp_path):
+    path = os.path.join(tmp_path, "data", "inventory.json")
+    records = [{"inventory_number": "INV-001", "name": "Клавиатура «Logitech»", "condition": "исправно"}]
+    storage.save_data(path, records)
+    assert storage.load_data(path) == records
