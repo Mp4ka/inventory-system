@@ -1,9 +1,17 @@
 """Автоматические тесты операций с инвентарём и файлового хранения.
 
-Запуск: python -m pytest
+Запуск:
+    python -m pytest
+    python tests/test_inventory.py   (запуск файла напрямую)
 """
 
 import os
+import sys
+
+# Корень проекта в sys.path, чтобы файл запускался и напрямую из IDE.
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 import pytest
 
@@ -232,3 +240,7 @@ def test_update_keeps_record_unchanged_on_error(records):
     with pytest.raises(ValueError):
         inventory.update_record(records, "INV-001", {"name": ""})
     assert inventory.find_by_number(records, "INV-001") == before
+
+
+if __name__ == "__main__":
+    raise SystemExit(pytest.main([os.path.abspath(__file__), "-v"]))
