@@ -213,3 +213,22 @@ def test_save_and_load_unicode(tmp_path):
     records = [{"inventory_number": "INV-001", "name": "Клавиатура «Logitech»", "condition": "исправно"}]
     storage.save_data(path, records)
     assert storage.load_data(path) == records
+
+
+# --- Спринт 5: устойчивость (регрессия) ---
+
+def test_update_empty_number_rejected(records):
+    with pytest.raises(ValueError):
+        inventory.update_record(records, "INV-001", {"inventory_number": ""})
+
+
+def test_update_empty_required_field_rejected(records):
+    with pytest.raises(ValueError):
+        inventory.update_record(records, "INV-001", {"name": ""})
+
+
+def test_update_keeps_record_unchanged_on_error(records):
+    before = dict(inventory.find_by_number(records, "INV-001"))
+    with pytest.raises(ValueError):
+        inventory.update_record(records, "INV-001", {"name": ""})
+    assert inventory.find_by_number(records, "INV-001") == before
