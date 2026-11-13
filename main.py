@@ -12,6 +12,11 @@ import storage
 DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "inventory.json")
 
 
+def save(records):
+    """Сохраняет текущее состояние инвентаря в файл."""
+    storage.save_data(DATA_PATH, records)
+
+
 def print_record(record):
     """Выводит карточку оборудования в одну строку."""
     print(
@@ -52,6 +57,7 @@ def add(records):
         print(f"Номер сгенерирован автоматически: {record['inventory_number']}")
     try:
         inventory.add_record(records, record)
+        save(records)
         print("Запись добавлена.")
     except ValueError as e:
         print(f"Ошибка: {e}")
@@ -71,6 +77,7 @@ def edit(records):
             changes[field] = value
     try:
         inventory.update_record(records, number, changes)
+        save(records)
         print("Запись изменена.")
     except ValueError as e:
         print(f"Ошибка: {e}")
@@ -82,6 +89,7 @@ def delete(records):
     try:
         deleted = inventory.delete_record(records, number, confirmed=confirm in ("да", "yes", "y"))
         if deleted:
+            save(records)
             print("Запись удалена.")
         else:
             print("Удаление отменено.")
