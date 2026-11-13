@@ -242,5 +242,23 @@ def test_update_keeps_record_unchanged_on_error(records):
     assert inventory.find_by_number(records, "INV-001") == before
 
 
+# --- Спринт 6: оформление и финальная сборка ---
+
+def test_render_card_contains_fields():
+    import main
+    record = {
+        "inventory_number": "INV-777",
+        "type": "Принтер",
+        "name": "HP LaserJet",
+        "room": "305",
+        "condition": "списано",
+    }
+    text = "\n".join(main.render_card(record))
+    assert "INV-777" in text
+    assert "Принтер" in text
+    assert "305" in text
+    assert "списано" in text
+
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([os.path.abspath(__file__), "-v"]))
